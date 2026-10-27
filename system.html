@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GateFlow VMS | Visitor Management System</title>
+<style>
+:root{
+  --bg:#f7f5ff; --card:#ffffff; --text:#1f2340; --muted:#747993;
+  --primary:#7c3aed; --primary2:#a855f7; --pink:#ec4899; --cyan:#06b6d4;
+  --success:#16a34a; --warning:#f59e0b; --danger:#ef4444;
+  --border:#e9e7f4; --shadow:0 12px 35px rgba(64,42,120,.10);
+}
+*{box-sizing:border-box} html{scroll-behavior:smooth}
+body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select{font:inherit} button{cursor:pointer;border:0}
+.app{display:flex;min-height:100vh}
+.sidebar{width:260px;background:linear-gradient(180deg,#21134f,#3d176d 58%,#741d75);color:white;padding:22px 16px;position:fixed;inset:0 auto 0 0;z-index:20;overflow:auto}
+.brand{display:flex;gap:12px;align-items:center;padding:8px 10px 24px}
+.logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#f472b6,#8b5cf6);display:grid;place-items:center;font-size:23px;box-shadow:0 8px 25px #0003}
+.brand h1{font-size:17px;margin:0}.brand small{opacity:.65}
+.nav{display:grid;gap:6px}.nav button{background:transparent;color:#e9ddff;text-align:left;padding:12px 13px;border-radius:12px;display:flex;gap:11px;align-items:center}
+.nav button:hover,.nav button.active{background:#ffffff18;color:white}.nav span:first-child{width:24px}
+.side-note{margin-top:25px;background:#ffffff12;border:1px solid #ffffff20;border-radius:15px;padding:13px;font-size:12px;line-height:1.5;color:#eadfff}
+.main{margin-left:260px;width:calc(100% - 260px)}
+.topbar{height:72px;background:#ffffffdd;backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:10}
+.page-title{font-weight:800}.top-actions{display:flex;gap:10px;align-items:center}
+.iconbtn{width:40px;height:40px;border-radius:12px;background:#f4f0ff;color:#5b21b6}
+.profile{display:flex;align-items:center;gap:9px;padding:6px 10px;background:#faf9ff;border:1px solid var(--border);border-radius:13px}
+.avatar{width:31px;height:31px;border-radius:10px;background:linear-gradient(135deg,#8b5cf6,#ec4899);color:#fff;display:grid;place-items:center;font-weight:800;font-size:12px}
+.content{padding:28px;max-width:1500px;margin:auto}.view{display:none}.view.active{display:block}
+.hero{background:linear-gradient(135deg,#281451,#6d28d9 55%,#db2777);color:white;border-radius:25px;padding:28px;display:flex;justify-content:space-between;gap:25px;overflow:hidden;position:relative;box-shadow:var(--shadow)}
+.hero:after{content:"";position:absolute;width:340px;height:340px;border:50px solid #ffffff12;border-radius:50%;right:-120px;top:-160px}
+.hero h2{font-size:30px;margin:0 0 8px}.hero p{max-width:720px;color:#eee5ff;line-height:1.6;margin:0}
+.hero-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:20px}.btn{padding:10px 14px;border-radius:11px;font-weight:700;transition:.2s}.btn:hover{transform:translateY(-1px)}
+.btn.primary{background:white;color:#5b21b6}.btn.purple{background:var(--primary);color:white}.btn.pink{background:var(--pink);color:white}.btn.ghost{background:#ffffff18;color:white;border:1px solid #ffffff30}
+.grid{display:grid;gap:16px}.stats{grid-template-columns:repeat(4,1fr);margin:18px 0}.stat{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:var(--shadow)}
+.stat .ico{font-size:22px}.stat .num{font-size:27px;font-weight:900;margin-top:7px}.muted{color:var(--muted);font-size:13px}
+.two{grid-template-columns:1.25fr .75fr}.three{grid-template-columns:repeat(3,1fr)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:19px;box-shadow:var(--shadow)}.card h3{margin:0 0 15px;font-size:16px}
+.section-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 14px}
+.searchbar{display:flex;gap:9px;margin-bottom:15px}.searchbar input,.field input,.field select,.field textarea{width:100%;border:1px solid var(--border);background:#fbfaff;border-radius:11px;padding:10px 12px;outline:none;color:var(--text)}input:focus,select:focus,textarea:focus{border-color:#a78bfa;box-shadow:0 0 0 3px #8b5cf61a}
+.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse}th,td{padding:12px 10px;border-bottom:1px solid #efedf6;text-align:left;font-size:13px;white-space:nowrap}th{font-size:11px;text-transform:uppercase;color:#888ba2;letter-spacing:.05em}
+.badge{display:inline-flex;padding:5px 8px;border-radius:999px;font-size:11px;font-weight:800}.green{background:#dcfce7;color:#166534}.yellow{background:#fef3c7;color:#92400e}.red{background:#fee2e2;color:#991b1b}.purple-b{background:#ede9fe;color:#5b21b6}.blue{background:#cffafe;color:#155e75}
+.quick{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.quick button{padding:13px;text-align:left;background:#faf9ff;border:1px solid var(--border);border-radius:13px;color:var(--text)}.quick button b{display:block;margin-bottom:3px}
+.steps{display:grid;gap:8px}.step{display:flex;gap:11px;align-items:flex-start;padding:10px;background:#faf9ff;border-radius:12px}.step .circle{min-width:28px;height:28px;border-radius:50%;background:#ede9fe;color:#6d28d9;display:grid;place-items:center;font-weight:800;font-size:12px}
+.notice{padding:11px 13px;border-radius:12px;background:#f5f3ff;color:#5b21b6;font-size:13px;line-height:1.5}.warning{background:#fff7ed;color:#9a3412}.success{background:#f0fdf4;color:#166534}
+.modal{position:fixed;inset:0;background:#11182788;display:none;place-items:center;z-index:50;padding:20px}.modal.show{display:grid}.modalbox{background:white;border-radius:20px;width:min(650px,100%);max-height:90vh;overflow:auto;padding:22px;box-shadow:0 30px 80px #0003}.modal-head{display:flex;justify-content:space-between;align-items:center}.close{background:#f3f4f6;width:34px;height:34px;border-radius:10px}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field label{display:block;font-size:12px;font-weight:800;margin-bottom:6px}.field.full{grid-column:1/-1}
+.qrbox{width:190px;height:190px;margin:15px auto;background:#fff;border:12px solid white;box-shadow:0 0 0 1px #ddd;display:grid;place-items:center;text-align:centermin-height:300px;display:flex;align-items:center;justify-content:center;background:#fff;padding:14px;border:2px solid #ddd;border-radius:14px;}.qrbox span{background:white;padding:6px;font-weight:900;font-size:12px}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.flow .node{background:#f5f3ff;border:1px solid #e9d5ff;padding:10px;border-radius:11px;font-size:12px;font-weight:700}.arrow{color:#a855f7;font-weight:900}
+.timeline{display:grid;gap:9px}.event{display:flex;gap:10px;padding:10px;border-left:3px solid #c4b5fd;background:#faf9ff;border-radius:0 10px 10px 0}.event b{font-size:13px}
+.empty{text-align:center;padding:30px;color:var(--muted)}
+.toast{position:fixed;right:24px;bottom:24px;background:#20123e;color:white;padding:12px 16px;border-radius:13px;box-shadow:0 15px 40px #0003;transform:translateY(100px);opacity:0;transition:.3s;z-index:100;font-size:13px}.toast.show{transform:translateY(0);opacity:1}
+.footer{text-align:center;color:#9294a7;padding:30px;font-size:12px}
+.kpi{font-size:13px;line-height:1.6}.mini-bar{height:8px;border-radius:20px;background:#eeeafa;overflow:hidden}.mini-bar i{display:block;height:100%;background:linear-gradient(90deg,#8b5cf6,#ec4899)}
+.fab-group{position:fixed;right:18px;bottom:18px;display:flex;flex-direction:column;gap:10px;z-index:40}
+.fab{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-size:22px;box-shadow:0 12px 30px #0004;color:white}
+.fab.scan{background:linear-gradient(135deg,#7c3aed,#ec4899)}.fab.lang{background:linear-gradient(135deg,#0891b2,#06b6d4);font-size:19px}
+.info-toggle{display:inline-flex;background:#f4f0ff;border-radius:999px;padding:4px;gap:4px}
+.info-toggle button{padding:8px 16px;border-radius:999px;font-weight:800;font-size:13px;background:transparent;color:#5b21b6}
+.info-toggle button.active{background:var(--primary);color:white}
+.detail-extra{display:none;margin-top:8px;padding-top:8px;border-top:1px dashed var(--border)}
+#appinfo.detailed .detail-extra{display:block}
+.flat-group{border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:10px;background:#faf9ff}
+.flat-group .fg-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+@media(max-width:1000px){.sidebar{width:75px}.brand div:not(.logo),.brand small,.nav button span:last-child,.side-note{display:none}.main{margin-left:75px;width:calc(100% - 75px)}.brand{justify-content:center}.stats{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}}
+@media(max-width:650px){.topbar{padding:0 15px}.content{padding:15px}.hero{padding:20px}.hero h2{font-size:23px}.stats,.three,.formgrid{grid-template-columns:1fr}.profile span{display:none}.sidebar{width:62px}.main{margin-left:62px;width:calc(100% - 62px)}}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+</head>
+<body>
+
+<!-- First-launch language selection -->
+<div class="modal show" id="languageScreen" style="background:linear-gradient(135deg,#1b0b38,#7c3aed,#ec4899);">
+  <div class="modalbox" style="max-width:560px;text-align:center;padding:34px;">
+    <div style="font-size:48px;margin-bottom:8px;">🌐</div>
+    <div class="muted">WELCOME TO</div>
+    <h1 style="margin:5px 0;font-size:32px;">GateFlow VMS</h1>
+    <p class="kpi">Choose your preferred language to continue.</p>
+    <div class="quick" style="margin-top:20px;">
+      <button onclick="chooseLanguage('English')"><b>🇬🇧 English</b><span class="muted">Continue in English</span></button>
+      <button onclick="chooseLanguage('Hindi')"><b>🇮🇳 हिन्दी</b><span class="muted">हिन्दी में जारी रखें</span></button>
+      <button onclick="chooseLanguage('Marathi')"><b>🇮🇳 मराठी</b><span class="muted">मराठीत पुढे जा</span></button>
+    </div>
+    <div class="notice" style="margin-top:18px;">You can change this preference later from the profile menu.</div>
+  </div>
+</div>
+
+<!-- Login -->
+<div class="modal" id="loginScreen" style="background:linear-gradient(135deg,#1b0b38,#7c3aed,#ec4899);">
+  <div class="modalbox" style="max-width:560px;">
+    <div style="text-align:center;">
+      <div class="logo" style="margin:0 auto 12px;">⌂</div>
+      <div class="muted">SECURE RESIDENTIAL ACCESS</div>
+      <h1 style="margin:5px 0;">Sign in to GateFlow</h1>
+      <p class="muted">Tap your role to continue instantly, or sign in manually below.</p>
+    </div>
+    <div class="quick" style="margin-top:16px;">
+      <button type="button" onclick="quickLogin('watchman')">🛡️ <b>Watchman / Security</b><span class="muted">Continue instantly</span></button>
+      <button type="button" onclick="quickLogin('resident')">🏠 <b>Resident</b><span class="muted">Continue instantly</span></button>
+      <button type="button" onclick="quickLogin('admin')">🗂️ <b>Administrator</b><span class="muted">Continue instantly</span></button>
+    </div>
+    <div class="notice" style="margin:14px 0 0;text-align:center">— or sign in manually —</div>
+    <form onsubmit="loginUser(event)" style="margin-top:20px;">
+      <div class="field"><label>Continue as</label>
+        <select id="loginRole" onchange="updateLoginHint()">
+          <option value="watchman">Watchman / Security</option>
+          <option value="resident">Resident</option>
+          <option value="admin">Administrator</option>
+        </select>
+      </div>
+      <div class="field" style="margin-top:12px;"><label>Username / ID</label><input id="loginUser" required placeholder="Enter your ID"></div>
+      <div class="field" style="margin-top:12px;"><label>Password</label><input id="loginPass" type="password" required placeholder="Enter password"></div>
+      <div id="loginHint" class="notice" style="margin-top:12px;">Demo Watchman: <b>watchman</b> / <b>1234</b></div>
+      <button class="btn purple" style="width:100%;margin-top:15px;" type="submit">🔐 Sign in</button>
+    </form>
+    <div class="notice" style="margin-top:12px;">For your college demonstration, these are demo credentials. A real deployment would authenticate through the backend database.</div>
+    <button class="btn" style="width:100%;margin-top:10px;background:#f4f0ff;color:#5b21b6" onclick="document.getElementById('loginScreen').classList.remove('show');document.getElementById('languageScreen').classList.add('show')">🌐 Change language</button>
+  </div>
+</div>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand"><div class="logo">⌂</div><div><h1>GateFlow VMS</h1><small>Residential Security</small></div></div>
+  <nav class="nav">
+    <button class="active" data-view="dashboard"><span>▦</span><span>Dashboard</span></button>
+    <button data-view="residents"><span>♙</span><span>Residents</span></button>
+    <button data-view="visitors"><span>♟</span><span>Visitors</span></button>
+    <button data-view="deliveries"><span>▣</span><span>Deliveries</span></button>
+    <button data-view="invites"><span>⌁</span><span>Guest Invites</span></button>
+    <button data-view="verify"><span>✓</span><span>Scan / Verify</span></button>
+    <button data-view="notifications"><span>♢</span><span>Notifications</span></button>
+    <button data-view="activity"><span>↶</span><span>Activity Log</span></button>
+    <button data-view="queue"><span>≡</span><span>Visitor Queue</span></button>
+    <button data-view="reports"><span>▤</span><span>Reports</span></button>
+    <button data-view="appinfo"><span>ⓘ</span><span>App Info</span></button>
+  </nav>
+  <div class="side-note"><b>Simple security mode</b><br>Designed for quick actions, flat search and minimal typing.</div>
+</aside>
+
+<main class="main">
+<header class="topbar">
+  <div class="page-title" id="pageTitle">Dashboard</div>
+  <div class="top-actions">
+    <button class="iconbtn" onclick="showNotifications()">🔔</button>
+    <button class="iconbtn" onclick="toggleLanguage()" title="Change language">🌐</button>
+    <div class="profile" style="cursor:pointer" onclick="openAccountMenu()"><div class="avatar" id="avatar">WG</div><span id="profileName">Watchman</span></div>
+  </div>
+</header>
+
+<div class="content">
+<section id="dashboard" class="view active">
+  <div class="hero">
+    <div><div class="muted" style="color:#d9c7ff">RESIDENTIAL VISITOR MANAGEMENT</div>
+      <h2>Welcome to GateFlow 👋</h2>
+      <p>QR-based access, simple flat verification, guest invitations, delivery tracking and digital entry/exit records — without forcing every user to depend on a smartphone.</p>
+      <div class="hero-actions">
+        <button class="btn primary" onclick="openModal('visitorModal')">＋ New Visitor</button>
+        <button class="btn ghost" onclick="openModal('deliveryModal')">▣ New Delivery</button>
+        <button class="btn ghost" onclick="go('verify')">✓ Scan / Verify</button>
+      </div>
+    </div>
+  </div>
+  <div class="grid stats">
+    <div class="stat"><div class="ico">🏠</div><div class="num" id="residentCount">0</div><div class="muted">Residents registered</div></div>
+    <div class="stat"><div class="ico">👥</div><div class="num" id="insideCount">0</div><div class="muted">Visitors inside</div></div>
+    <div class="stat"><div class="ico">📦</div><div class="num" id="deliveryCount">0</div><div class="muted">Deliveries today</div></div>
+    <div class="stat"><div class="ico">🔔</div><div class="num" id="notifCount">0</div><div class="muted">Unread notifications</div></div>
+  </div>
+  <div class="grid two">
+    <div class="card"><div class="section-head"><h3>Quick actions</h3><span class="badge purple-b">Watchman friendly</span></div>
+      <div class="quick">
+        <button onclick="openModal('visitorModal')">👤 <b>Unexpected visitor</b><span class="muted">Search flat and call resident</span></button>
+        <button onclick="openModal('deliveryModal')">📦 <b>New delivery</b><span class="muted">Check-in now, exit later</span></button>
+        <button onclick="go('verify')">▣ <b>Verify QR / ID</b><span class="muted">Resident, child or guest</span></button>
+        <button id="quickInviteBtn" onclick="openModal('inviteModal')">💌 <b>Create guest QR</b><span class="muted">Temporary relative invitation</span></button>
+      </div>
+    </div>
+    <div class="card"><div class="section-head"><h3>Today's gate flow</h3><span class="muted" id="todayLabel"></span></div>
+      <div class="steps">
+        <div class="step"><div class="circle">1</div><div><b>Identify</b><div class="muted">Scan QR/ID or search a flat</div></div></div>
+        <div class="step"><div class="circle">2</div><div><b>Verify</b><div class="muted">Check database or contact resident</div></div></div>
+        <div class="step"><div class="circle">3</div><div><b>Record</b><div class="muted">Store entry and exit digitally</div></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="grid two" style="margin-top:16px">
+    <div class="card"><div class="section-head"><h3>Recent operations</h3><button class="btn purple" onclick="go('activity')">View all</button></div><div id="recentEvents" class="timeline"></div></div>
+    <div class="card"><h3>New here?</h3>
+      <p class="kpi">Not sure how something works? The App Info page explains every part of GateFlow in plain language — who uses it, how QR scanning works, and what each screen does.</p>
+      <button class="btn purple" style="margin-top:6px" onclick="go('appinfo')">ⓘ Open App Info</button>
+    </div>
+  </div>
+</section>
+
+<section id="residents" class="view">
+  <div class="section-head"><div><h2>Residents</h2><div class="muted">Demo society: 3 wings (A, B and C) with 60 additional sample resident records, grouped by flat.</div></div><button class="btn purple" id="addResidentBtn" onclick="openModal('residentModal')">＋ Add resident</button></div>
+  <div class="notice">This prototype includes fictional sample residents across three wings. A flat can have more than one resident listed, so security can find the right household during manual verification. The names and contact numbers are demo data, not real resident details.</div>
+  <div class="card" style="margin-top:12px">
+    <div class="searchbar"><input id="residentSearch" placeholder="Search name, flat, category or phone…" oninput="renderResidents()"></div>
+    <div class="table-wrap"><table><thead><tr><th>Name</th><th>Flat</th><th>Category</th><th>Contact</th><th>Resident ID</th><th>Status</th><th></th></tr></thead><tbody id="residentTable"></tbody></table></div>
+  </div>
+</section>
+
+<section id="visitors" class="view">
+  <div class="section-head"><div><h2>Visitors</h2><div class="muted">Digital visitor records with entry and exit tracking.</div></div><button class="btn purple" onclick="openModal('visitorModal')">＋ Register visitor</button></div>
+  <div class="card"><div class="searchbar"><input id="visitorSearch" placeholder="Search visitor or flat…" oninput="renderVisitors()"><select id="visitorFilter" onchange="renderVisitors()"><option value="">All</option><option>Inside</option><option>Exited</option></select></div>
+  <div class="table-wrap"><table><thead><tr><th>Visitor</th><th>Flat</th><th>Type</th><th>Entry</th><th>Exit</th><th>Status</th><th>Action</th></tr></thead><tbody id="visitorTable"></tbody></table></div></div>
+</section>
+
+<section id="deliveries" class="view">
+  <div class="section-head"><div><h2>Delivery Register</h2><div class="muted">No account or app required for delivery personnel.</div></div><button class="btn purple" onclick="openModal('deliveryModal')">＋ New delivery</button></div>
+  <div class="card"><div class="notice warning">Enter basic details, check the person in, then press EXIT once the delivery is done.</div>
+  <div class="table-wrap" style="margin-top:14px"><table><thead><tr><th>Person</th><th>Company</th><th>Flat</th><th>Entry</th><th>Exit</th><th>Status</th><th></th></tr></thead><tbody id="deliveryTable"></tbody></table></div></div>
+</section>
+
+<section id="invites" class="view">
+  <div class="section-head"><div><h2>Guest Invites</h2><div class="muted">Residents can create a temporary QR for relatives or expected guests.</div></div><button class="btn purple" onclick="openModal('inviteModal')">＋ Create invite</button></div>
+  <div class="grid three" id="inviteCards"></div>
+</section>
+
+<section id="verify" class="view">
+  <div class="grid two">
+    <div class="card"><h2>📷 Scan QR / ID</h2>
+      <div class="muted">On a phone, allow camera access and point the camera at a QR code. On a laptop, use a connected webcam.</div>
+      <div id="reader" style="width:100%;max-width:480px;margin:18px auto 10px;border-radius:16px;overflow:hidden;background:#111;min-height:120px;display:grid;place-items:center;color:white;">Camera preview will appear here</div>
+      <div class="hero-actions" style="margin-top:8px;">
+        <button class="btn purple" onclick="startQRScanner()">📷 Start camera scanner</button>
+        <button class="btn" onclick="openPhoneCamera()">📱 Scan QR photo</button>
+        <button class="btn" onclick="stopQRScanner()">■ Stop</button>
+        <input id="qrImageInput" type="file" accept="image/*" capture="environment" style="display:none" onchange="scanQRImage(event)">
+      </div>
+      <div class="notice" style="margin-top:12px;">If live camera scanning is unavailable, use “Scan QR photo” to take/select a QR photo. The demo QR token <b>GUEST-SQLRD0</b> is accepted directly for the project demonstration. On HTTPS or localhost, “Start camera scanner” provides live scanning.</div>
+      <div class="quick" style="margin-top:14px;">
+        <button onclick="simulateScan('resident')">▣ <b>Demo Resident QR</b><span class="muted">Permanent resident</span></button>
+        <button onclick="simulateScan('child')">🪪 <b>Demo Child ID</b><span class="muted">Physical ID</span></button>
+        <button onclick="simulateScan('guest')">💌 <b>Demo Guest QR</b><span class="muted">Temporary guest</span></button>
+        <button onclick="manualVerify()">⌕ <b>Manual flat search</b><span class="muted">Unexpected visitor</span></button>
+      </div>
+      <div id="verifyResult" style="margin-top:14px"></div>
+    </div>
+    <div class="card"><h3>How QR verification works</h3>
+      <div class="steps">
+        <div class="step"><div class="circle">1</div><div><b>Open camera</b><div class="muted">Tap Start camera scanner and allow camera access.</div></div></div>
+        <div class="step"><div class="circle">2</div><div><b>Scan the QR</b><div class="muted">The browser reads the QR content automatically.</div></div></div>
+        <div class="step"><div class="circle">3</div><div><b>Match the record</b><div class="muted">The system checks whether the token belongs to a resident or temporary guest.</div></div></div>
+        <div class="step"><div class="circle">4</div><div><b>Record the action</b><div class="muted">Valid access is logged; a guest scan can notify the resident.</div></div></div>
+      </div>
+      <div class="notice success" style="margin-top:14px"><b>Phone-friendly:</b> this is the section you can open on your phone during the presentation to demonstrate live QR scanning.</div>
+    </div>
+  </div>
+</section>
+
+<section id="notifications" class="view">
+  <div class="section-head"><div><h2>Notifications</h2><div class="muted">Guest-arrival and access activity notifications.</div></div><button class="btn purple" onclick="markAllRead()">Mark all read</button></div>
+  <div class="card"><div id="notificationList" class="timeline"></div></div>
+</section>
+
+<section id="activity" class="view">
+  <div class="section-head"><div><h2>Activity Log</h2><div class="muted">Your most recent actions, newest first.</div></div><button class="btn purple" onclick="undoLast()">↶ Undo latest</button></div>
+  <div class="card"><div id="activityList" class="timeline"></div></div>
+</section>
+
+<section id="queue" class="view">
+  <div class="section-head"><div><h2>Visitor Queue</h2><div class="muted">People waiting to be checked in, in arrival order.</div></div><button class="btn purple" onclick="addQueueDemo()">＋ Add waiting visitor</button></div>
+  <div class="card"><div class="notice">Visitors are processed in arrival order. This keeps the gate flow predictable when several people arrive together.</div><div id="queueList" style="margin-top:14px"></div></div>
+</section>
+
+<section id="reports" class="view">
+  <div class="section-head"><div><h2>Reports & Results</h2><div class="muted">A simple demo view of the experiment and expected outputs.</div></div><button class="btn purple" onclick="exportData()">⇩ Export JSON</button></div>
+  <div class="grid three">
+    <div class="card"><h3>Access overview</h3><div class="kpi">Residents verified <b id="rptResidents">0</b><div class="mini-bar"><i style="width:82%"></i></div><br>Visitors inside <b id="rptInside">0</b><div class="mini-bar"><i style="width:46%"></i></div><br>Deliveries logged <b id="rptDelivery">0</b><div class="mini-bar"><i style="width:63%"></i></div></div></div>
+    <div class="card"><h3>Experiment test cases</h3><div class="steps">
+      <div class="step"><div class="circle">✓</div><div><b>Valid resident QR</b><div class="muted">Resident verified + entry recorded</div></div></div>
+      <div class="step"><div class="circle">✓</div><div><b>Invalid QR</b><div class="muted">Access rejected</div></div></div>
+      <div class="step"><div class="circle">✓</div><div><b>Temporary guest QR</b><div class="muted">Guest verified + resident notified</div></div></div>
+      <div class="step"><div class="circle">✓</div><div><b>Delivery</b><div class="muted">Entry and exit timestamps stored</div></div></div>
+    </div></div>
+    <div class="card"><h3>Demo output</h3><div class="notice success"><b>Resident Verified</b><br>Name: Aarav Sharma<br>Flat: B-401<br>Category: Minor<br>Entry: 09:12 AM</div><div class="notice" style="margin-top:9px"><b>Flat Search: B-401</b><br>Family · Amit Sharma · Neha Sharma · Riya Sharma<br>Authorized Contact: Amit Sharma</div></div>
+  </div>
+</section>
+
+<section id="appinfo" class="view">
+  <div class="hero"><div><div class="muted" style="color:#eadcff">APP INFORMATION</div><h2>Everything about GateFlow, simply explained</h2>
+  <p>This page explains what each part of the website does, who uses it, and what happens from the moment someone reaches the society gate.</p></div></div>
+  <div class="card" style="margin-top:16px;text-align:center">
+    <div class="muted" style="margin-bottom:8px">Choose how much detail you want to read</div>
+    <div class="info-toggle">
+      <button id="infoSimpleBtn" class="active" onclick="setInfoMode(false)">🙂 Simple</button>
+      <button id="infoDetailBtn" onclick="setInfoMode(true)">🔍 Detailed</button>
+    </div>
+  </div>
+
+  <div class="grid two" style="margin-top:16px">
+    <div class="card"><h3>🏠 What is GateFlow?</h3>
+      <p class="kpi">GateFlow is a residential Visitor Management System. It replaces a paper visitor register with digital records while keeping the gate process simple for security staff.</p>
+      <div class="notice">The main idea is: <b>identify → verify → contact if needed → record entry → record exit.</b></div>
+      <div class="detail-extra kpi">Every check-in is saved with a timestamp, so at any time the app knows exactly who is currently inside the society, who has already left, and when each event happened. This data is what powers the Dashboard counters and Reports page.</div>
+    </div>
+    <div class="card"><h3>👥 Who can use it?</h3>
+      <div class="steps">
+        <div class="step"><div class="circle">S</div><div><b>Security / Watchman</b><div class="muted">Handles gate verification, unexpected visitors and deliveries.</div></div></div>
+        <div class="step"><div class="circle">R</div><div><b>Resident</b><div class="muted">Creates guest invitations and receives arrival notifications.</div></div></div>
+        <div class="step"><div class="circle">A</div><div><b>Administrator</b><div class="muted">Manages resident records, system information and reports.</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px"><h3>🔐 Login & roles</h3>
+    <p class="kpi">When the website opens, it first asks for a language. After that, the user must sign in and choose whether they are a <b>Watchman/Security, Resident, or Administrator</b>. Different roles are the foundation for a real multi-user system.</p>
+    <div class="grid three">
+      <div class="notice"><b>Watchman</b><br>Gate operations, QR scanning, flat search, visitors, deliveries and exits.</div>
+      <div class="notice"><b>Resident</b><br>Guest invitations, temporary QR codes and arrival notifications.</div>
+      <div class="notice"><b>Administrator</b><br>Resident management, reports and system oversight.</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px"><h3>📷 QR scanning</h3>
+    <p class="kpi">A resident or guest can present a QR code. The security user opens <b>Scan / Verify</b> (also available from the 📷 button that floats on every screen), starts the camera, and points the phone camera at the QR. The QR value is read by the browser. The system then checks the value against the appropriate record.</p>
+    <div class="flow"><span class="node">Open scanner</span><span class="arrow">→</span><span class="node">Allow camera</span><span class="arrow">→</span><span class="node">Scan QR</span><span class="arrow">→</span><span class="node">Validate</span><span class="arrow">→</span><span class="node">Record entry</span></div>
+    <div class="detail-extra kpi">Each QR code encodes a unique token. A permanent resident's token matches their Resident ID; a guest's token is randomly generated when a resident creates an invite. When scanned, the app searches both lists for a match — if none is found, the visit is marked unrecognized and logged for the guard to handle manually.</div>
+  </div>
+
+  <div class="grid two" style="margin-top:16px">
+    <div class="card"><h3>🪪 Permanent residents</h3>
+      <p class="kpi">A permanent resident has a Resident ID and QR record already stored in the system. They do not need to register themselves again at every visit.</p>
+      <p class="kpi">If the resident forgets the physical ID, the security user can use <b>flat search</b> for manual verification.</p>
+    </div>
+    <div class="card"><h3>👶 Children</h3>
+      <p class="kpi">A child does not have to depend on carrying a smartphone. The project supports a <b>physical ID</b> workflow. The guard can verify the ID and record entry.</p>
+    </div>
+    <div class="card"><h3>👵 Senior citizens</h3>
+      <p class="kpi">A senior citizen is not forced to use the app. A visitor can provide the flat number. Security searches the flat, sees the resident/contact information, calls the resident and registers the visitor after confirmation.</p>
+    </div>
+    <div class="card"><h3>👨‍👩‍👧 Families / couples</h3>
+      <p class="kpi">A flat can contain multiple residents. The purpose is not to show unrelated people; it is to allow the security user to see who is associated with that flat when manual verification is required. The administrator can maintain the correct residents for each flat.</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px"><h3>🔔 Resident Guest-Arrival Notification</h3><p class="kpi">When a guest invitation is scanned and verified at the gate, GateFlow creates a notification for the resident of that flat. The resident can open <b>Notifications</b> or tap the 🔔 bell to see: <b>guest name, flat number, arrival time and confirmation that the guest was verified.</b></p><div class="flow"><span class="node">Resident creates invite</span><span class="arrow">→</span><span class="node">Guest QR scanned</span><span class="arrow">→</span><span class="node">Guest verified</span><span class="arrow">→</span><span class="node">Resident notified 🔔</span></div></div>
+
+  <div class="grid three" style="margin-top:16px">
+    <div class="card"><h3>💌 Expected relative</h3><p class="kpi">Resident enters guest name, flat, date and time. The system creates a temporary QR. The guest shows it at the gate. After validation, the resident gets a guest-arrival notification.</p></div>
+    <div class="card"><h3>❓ Unexpected visitor</h3><p class="kpi">The visitor gives a flat number. Security searches the flat, sees the relevant resident/contact, calls the resident and records the visitor only after confirmation.</p></div>
+    <div class="card"><h3>📦 Delivery</h3><p class="kpi">The delivery person does not need an account. Security enters basic details, stores entry time, and later presses <b>EXIT</b> to store the exit time.</p></div>
+  </div>
+
+  <div class="grid two" style="margin-top:16px">
+    <div class="card"><h3>📋 Queue</h3><p class="kpi">If several visitors arrive together, they can wait in a queue. Visitors are processed in arrival order. This demonstrates the Queue data structure from the project.</p></div>
+    <div class="card"><h3>↶ Stack</h3><p class="kpi">The latest system operations are kept at the top of the Activity Stack. The demo includes an <b>Undo latest</b> action to make the Stack concept easy to demonstrate.</p></div>
+  </div>
+
+  <div class="card" style="margin-top:16px"><h3>🌐 Language preference</h3><p class="kpi">The first screen asks the user to select <b>English, Hindi or Marathi</b>. The selected preference is remembered in the browser. You can change it anytime using the 🌐 button in the top bar or the floating 🌐 button on the screen.</p>
+  <div class="detail-extra kpi">The choice is stored in the browser's local storage, so it is remembered the next time this file is opened on the same device. A production version would fully translate every screen; this prototype focuses on demonstrating where that language layer plugs in.</div></div>
+
+  <div class="card" style="margin-top:16px"><h3>🧪 What your five demo scenarios show</h3>
+    <div class="grid three">
+      <div class="notice success"><b>1. Permanent Resident</b><br>Scan QR → Resident Verified → Entry Recorded</div>
+      <div class="notice success"><b>2. Child</b><br>Scan Physical ID → Child Identified → Entry Recorded</div>
+      <div class="notice success"><b>3. Relative</b><br>Create temporary QR → Guest scans → Resident notified</div>
+      <div class="notice success"><b>4. Unexpected Visitor</b><br>Flat search → Call resident → Register visitor</div>
+      <div class="notice success"><b>5. Delivery</b><br>New Delivery → Check-in → EXIT</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px"><h3>🛠️ Technology used in this prototype</h3>
+    <p class="kpi"><b>Frontend:</b> HTML + CSS + JavaScript · <b>QR camera:</b> browser camera API through the QR scanner library · <b>Demo database:</b> browser localStorage.</p>
+    <p class="kpi"><b>Planned full-stack version:</b> Python + MySQL, matching the software requirements in the capstone document.</p>
+  </div>
+
+  <div class="card" style="margin-top:16px"><h3>📚 Project background</h3>
+    <p class="kpi">The capstone is based on the documented problem of slow paper registers and the research concepts of QR-based authentication, digital visitor registration, notifications, residential access control and tracking. Its contribution focuses on making those ideas practical for users with different levels of technological comfort.</p>
+    <p class="kpi"><b>Future work:</b> RFID resident access, automatic gate integration, CCTV integration, facial recognition, SMS/push notifications, cloud deployment, emergency alerts and visitor analytics.</p>
+  </div>
+</section>
+
+<div class="footer">GateFlow VMS · Capstone prototype · Built for a simple, accessible residential gate workflow</div>
+</div>
+</main>
+</div>
+
+<!-- Modals -->
+<div class="modal" id="residentModal"><div class="modalbox"><div class="modal-head"><h3>Add Resident</h3><button class="close" onclick="closeModal('residentModal')">×</button></div>
+<form onsubmit="addResident(event)" class="formgrid">
+<div class="field"><label>Name</label><input id="resName" required></div><div class="field"><label>Flat</label><input id="resFlat" placeholder="B-401" required></div>
+<div class="field"><label>Category</label><select id="resCat"><option>Family</option><option>Couple</option><option>Senior Citizen</option><option>Minor</option><option>Individual</option></select></div><div class="field"><label>Phone</label><input id="resPhone" required></div>
+<div class="field full"><label>Resident ID</label><input id="resId" placeholder="RES-104"></div>
+<div class="field full"><button class="btn purple" type="submit">Save resident</button></div></form></div></div>
+
+<div class="modal" id="visitorModal"><div class="modalbox"><div class="modal-head"><h3>Register Visitor</h3><button class="close" onclick="closeModal('visitorModal')">×</button></div>
+<form onsubmit="addVisitor(event)" class="formgrid">
+<div class="field"><label>Visitor name</label><input id="visName" required></div><div class="field"><label>Flat</label><input id="visFlat" placeholder="B-401" required></div>
+<div class="field"><label>Type</label><select id="visType"><option>Unexpected</option><option>Relative</option><option>Friend</option><option>Other</option></select></div><div class="field"><label>Purpose</label><input id="visPurpose" placeholder="Visit resident"></div>
+<div class="field full"><button class="btn purple" type="submit">Check in visitor</button></div></form></div></div>
+
+<div class="modal" id="deliveryModal"><div class="modalbox"><div class="modal-head"><h3>New Delivery</h3><button class="close" onclick="closeModal('deliveryModal')">×</button></div>
+<form onsubmit="addDelivery(event)" class="formgrid">
+<div class="field"><label>Delivery person</label><input id="delName" required></div><div class="field"><label>Company</label><input id="delCompany" placeholder="Courier / Food / Other"></div>
+<div class="field"><label>Flat</label><input id="delFlat" required></div><div class="field"><label>Contact (optional)</label><input id="delPhone"></div>
+<div class="field full"><button class="btn purple" type="submit">Check in delivery</button></div></form></div></div>
+
+<div class="modal" id="inviteModal"><div class="modalbox"><div class="modal-head"><h3>Create Temporary Guest QR</h3><button class="close" onclick="closeModal('inviteModal')">×</button></div>
+<form onsubmit="addInvite(event)" class="formgrid">
+<div class="field"><label>Guest name</label><input id="invName" required></div><div class="field"><label>Flat</label><input id="invFlat" required></div>
+<div class="field"><label>Visit date</label><input id="invDate" type="date" required></div><div class="field"><label>Visit time</label><input id="invTime" type="time" required></div>
+<div class="field full"><button class="btn purple" type="submit">Generate temporary QR</button></div></form></div></div>
+
+<div class="modal" id="qrModal"><div class="modalbox" style="text-align:center"><div class="modal-head"><h3 id="qrTitle">Guest QR</h3><button class="close" onclick="closeModal('qrModal')">×</button></div><div class="qrbox" id="generatedQR"><span>GUEST QR</span></div><div class="notice">Demo QR token: <b id="qrToken"></b><br>In a production build, this token would be encoded into a real QR and validated by the backend.</div></div></div>
+
+<div class="modal" id="accountModal"><div class="modalbox" style="max-width:430px"><div class="modal-head"><h3>Account</h3><button class="close" onclick="closeModal('accountModal')">×</button></div><div class="notice" id="accountDetails"></div><div class="quick" style="margin-top:12px"><button onclick="changeLanguageFromAccount()">🌐 <b>Change language</b><span class="muted">Update preference</span></button><button onclick="logoutUser()">↪ <b>Log out</b><span class="muted">Return to login</span></button></div></div></div>
+<div class="fab-group">
+  <button class="fab lang" onclick="toggleLanguage()" title="Change language">🌐</button>
+  <button class="fab scan" onclick="go('verify')" title="Scan QR / Verify">📷</button>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+// Safe storage: some mobile browsers block localStorage for files opened
+// directly from disk. If that happens, fall back to an in-memory store so
+// the app (and sign-in) never gets stuck instead of crashing silently.
+const memStore={};
+const db={
+  get(k){try{return localStorage.getItem(k)}catch(e){return memStore[k]??null}},
+  set(k,v){try{localStorage.setItem(k,v)}catch(e){memStore[k]=v}},
+  remove(k){try{localStorage.removeItem(k)}catch(e){delete memStore[k]}}
+};
+const seedResidents=[
+ {id:'RES-101',name:'Aarav Sharma',flat:'B-401',category:'Minor',phone:'9876543210'},
+ {id:'RES-102',name:'Amit Sharma',flat:'B-401',category:'Family',phone:'9876543211'},
+ {id:'RES-103',name:'Neha Sharma',flat:'B-401',category:'Family',phone:'9876543212'},
+ {id:'RES-104',name:'Riya Sharma',flat:'B-401',category:'Family',phone:'9876543213'},
+ {id:'RES-105',name:'Meera Joshi',flat:'A-202',category:'Senior Citizen',phone:'9876543214'},
+ {id:'RES-106',name:'Kabir Patel',flat:'C-302',category:'Couple',phone:'9876543215'},
+ {id:'RES-107',name:'Anaya Deshmukh',flat:'A-101',category:'Family',phone:'9000000107'},
+ {id:'RES-108',name:'Rohan Deshmukh',flat:'A-101',category:'Family',phone:'9000000108'},
+ {id:'RES-109',name:'Isha Kulkarni',flat:'A-102',category:'Family',phone:'9000000109'},
+ {id:'RES-110',name:'Siddharth Kulkarni',flat:'A-102',category:'Family',phone:'9000000110'},
+ {id:'RES-111',name:'Mira Patil',flat:'A-103',category:'Family',phone:'9000000111'},
+ {id:'RES-112',name:'Aditya Patil',flat:'A-103',category:'Individual',phone:'9000000112'},
+ {id:'RES-113',name:'Kavya Shah',flat:'A-104',category:'Family',phone:'9000000113'},
+ {id:'RES-114',name:'Nirav Shah',flat:'A-104',category:'Family',phone:'9000000114'},
+ {id:'RES-115',name:'Saanvi Naik',flat:'A-105',category:'Family',phone:'9000000115'},
+ {id:'RES-116',name:'Omkar Naik',flat:'A-105',category:'Family',phone:'9000000116'},
+ {id:'RES-117',name:'Aditi Mehta',flat:'A-106',category:'Family',phone:'9000000117'},
+ {id:'RES-118',name:'Kunal Mehta',flat:'A-106',category:'Family',phone:'9000000118'},
+ {id:'RES-119',name:'Avni Pawar',flat:'A-107',category:'Senior Citizen',phone:'9000000119'},
+ {id:'RES-120',name:'Pranav Pawar',flat:'A-107',category:'Family',phone:'9000000120'},
+ {id:'RES-121',name:'Diya Joshi',flat:'A-108',category:'Family',phone:'9000000121'},
+ {id:'RES-122',name:'Harsh Joshi',flat:'A-108',category:'Family',phone:'9000000122'},
+ {id:'RES-123',name:'Myra Rao',flat:'A-109',category:'Family',phone:'9000000123'},
+ {id:'RES-124',name:'Arjun Rao',flat:'A-109',category:'Family',phone:'9000000124'},
+ {id:'RES-125',name:'Tara More',flat:'A-110',category:'Family',phone:'9000000125'},
+ {id:'RES-126',name:'Yash More',flat:'A-110',category:'Individual',phone:'9000000126'},
+ {id:'RES-127',name:'Aanya Singh',flat:'B-101',category:'Family',phone:'9000000127'},
+ {id:'RES-128',name:'Vihaan Singh',flat:'B-101',category:'Family',phone:'9000000128'},
+ {id:'RES-129',name:'Kiara Kadam',flat:'B-102',category:'Family',phone:'9000000129'},
+ {id:'RES-130',name:'Atharv Kadam',flat:'B-102',category:'Family',phone:'9000000130'},
+ {id:'RES-131',name:'Nisha Gupta',flat:'B-103',category:'Family',phone:'9000000131'},
+ {id:'RES-132',name:'Rahul Gupta',flat:'B-103',category:'Family',phone:'9000000132'},
+ {id:'RES-133',name:'Reva Chavan',flat:'B-104',category:'Individual',phone:'9000000133'},
+ {id:'RES-134',name:'Soham Chavan',flat:'B-104',category:'Family',phone:'9000000134'},
+ {id:'RES-135',name:'Ira Bose',flat:'B-105',category:'Family',phone:'9000000135'},
+ {id:'RES-136',name:'Aniket Bose',flat:'B-105',category:'Senior Citizen',phone:'9000000136'},
+ {id:'RES-137',name:'Pari Nair',flat:'B-106',category:'Family',phone:'9000000137'},
+ {id:'RES-138',name:'Ritvik Nair',flat:'B-106',category:'Family',phone:'9000000138'},
+ {id:'RES-139',name:'Samaira Jadhav',flat:'B-107',category:'Family',phone:'9000000139'},
+ {id:'RES-140',name:'Vedant Jadhav',flat:'B-107',category:'Individual',phone:'9000000140'},
+ {id:'RES-141',name:'Rhea Kapoor',flat:'B-108',category:'Family',phone:'9000000141'},
+ {id:'RES-142',name:'Ishaan Kapoor',flat:'B-108',category:'Family',phone:'9000000142'},
+ {id:'RES-143',name:'Pihu Mishra',flat:'B-109',category:'Family',phone:'9000000143'},
+ {id:'RES-144',name:'Dev Mishra',flat:'B-109',category:'Family',phone:'9000000144'},
+ {id:'RES-145',name:'Aarohi Gokhale',flat:'B-110',category:'Family',phone:'9000000145'},
+ {id:'RES-146',name:'Tanmay Gokhale',flat:'B-110',category:'Family',phone:'9000000146'},
+ {id:'RES-147',name:'Esha Bhat',flat:'C-101',category:'Individual',phone:'9000000147'},
+ {id:'RES-148',name:'Manav Bhat',flat:'C-101',category:'Family',phone:'9000000148'},
+ {id:'RES-149',name:'Navya Saxena',flat:'C-102',category:'Family',phone:'9000000149'},
+ {id:'RES-150',name:'Dhruv Saxena',flat:'C-102',category:'Family',phone:'9000000150'},
+ {id:'RES-151',name:'Tanvi Reddy',flat:'C-103',category:'Family',phone:'9000000151'},
+ {id:'RES-152',name:'Vikram Reddy',flat:'C-103',category:'Family',phone:'9000000152'},
+ {id:'RES-153',name:'Zoya Fernandes',flat:'C-104',category:'Senior Citizen',phone:'9000000153'},
+ {id:'RES-154',name:'Neil Fernandes',flat:'C-104',category:'Individual',phone:'9000000154'},
+ {id:'RES-155',name:'Prisha Chopra',flat:'C-105',category:'Family',phone:'9000000155'},
+ {id:'RES-156',name:'Ayaan Chopra',flat:'C-105',category:'Family',phone:'9000000156'},
+ {id:'RES-157',name:'Mahi Sawant',flat:'C-106',category:'Family',phone:'9000000157'},
+ {id:'RES-158',name:'Parth Sawant',flat:'C-106',category:'Family',phone:'9000000158'},
+ {id:'RES-159',name:'Shreya Iyer',flat:'C-107',category:'Family',phone:'9000000159'},
+ {id:'RES-160',name:'Karthik Iyer',flat:'C-107',category:'Family',phone:'9000000160'},
+ {id:'RES-161',name:'Anvi Mane',flat:'C-108',category:'Individual',phone:'9000000161'},
+ {id:'RES-162',name:'Shlok Mane',flat:'C-108',category:'Family',phone:'9000000162'},
+ {id:'RES-163',name:'Jiya Verma',flat:'C-109',category:'Family',phone:'9000000163'},
+ {id:'RES-164',name:'Kabir Verma',flat:'C-109',category:'Family',phone:'9000000164'},
+ {id:'RES-165',name:'Inaya Khan',flat:'C-110',category:'Family',phone:'9000000165'},
+ {id:'RES-166',name:'Rehan Khan',flat:'C-110',category:'Family',phone:'9000000166'}
+];
+// Merge the expanded sample directory with previously saved records so existing demo sessions also receive the new residents.
+const savedResidents=JSON.parse(db.get("vms_residents")||"null");
+let residents=savedResidents ? [...seedResidents, ...savedResidents.filter(r=>!seedResidents.some(s=>s.id===r.id))] : seedResidents;
+let visitors=JSON.parse(db.get("vms_visitors")||"null")||[
+ {id:1,name:"Amit Sharma",flat:"B-401",type:"Relative",entry:"09:12 AM",exit:"—",status:"Inside"}
+];
+let deliveries=JSON.parse(db.get("vms_deliveries")||"null")||[];
+let invites=JSON.parse(db.get("vms_invites")||"null")||[];
+let notes=JSON.parse(db.get("vms_notes")||"null")||[
+ {text:"System ready for gate operations.",time:"Now",read:false},
+ {text:"Guest-arrival notification demo is enabled.",time:"Today",read:false}
+];
+let activity=JSON.parse(db.get("vms_activity")||"null")||[
+ {text:"Resident Aarav Sharma verified",time:"09:12 AM"},
+ {text:"Guest Amit Sharma checked in",time:"09:13 AM"}
+];
+let queue=JSON.parse(db.get("vms_queue")||"null")||[];
+
+
+const DEMO_RESIDENT_FLAT="B-401";
+let currentRole=db.get("vms_role")||"";
+let currentLanguage=db.get("vms_language")||"";
+const demoAccounts={
+  watchman:{user:"watchman",pass:"1234",name:"Watchman",avatar:"WG"},
+  resident:{user:"resident",pass:"1234",name:"Resident",avatar:"RS"},
+  admin:{user:"admin",pass:"1234",name:"Administrator",avatar:"AD"}
+};
+function chooseLanguage(lang){
+  currentLanguage=lang; db.set("vms_language",lang);
+  document.getElementById("languageScreen").classList.remove("show");
+  document.getElementById("loginScreen").classList.add("show");
+  updateLoginHint();
+}
+function updateLoginHint(){
+  const role=document.getElementById("loginRole").value, a=demoAccounts[role];
+  document.getElementById("loginHint").innerHTML=`Demo ${a.name}: <b>${a.user}</b> / <b>${a.pass}</b>`;
+}
+function quickLogin(role){
+  const a=demoAccounts[role];
+  currentRole=role; db.set("vms_role",role);
+  document.getElementById("loginScreen").classList.remove("show");
+  applyRoleUI(); go("dashboard"); toast(`Signed in as ${a.name}`);
+}
+function loginUser(e){
+  e.preventDefault();
+  const role=document.getElementById("loginRole").value;
+  const user=document.getElementById("loginUser").value.trim();
+  const pass=document.getElementById("loginPass").value.trim();
+  const a=demoAccounts[role];
+  if(user.toLowerCase()!==a.user.toLowerCase() || pass!==a.pass){toast("Incorrect demo username or password");return}
+  currentRole=role; db.set("vms_role",role);
+  document.getElementById("loginScreen").classList.remove("show");
+  applyRoleUI(); go("dashboard"); toast(`Signed in as ${a.name}`);
+}
+function applyRoleUI(){
+  const a=demoAccounts[currentRole]||demoAccounts.watchman;
+  document.getElementById("profileName").textContent=a.name;
+  document.getElementById("avatar").textContent=a.avatar;
+  // Reset every nav tab to visible first, then hide only what this role shouldn't see.
+  const allTabs=["dashboard","residents","visitors","deliveries","invites","verify","notifications","activity","queue","reports","appinfo"];
+  const hiddenByRole={
+    watchman:["invites","reports"],
+    resident:["visitors","deliveries","verify","activity","queue","reports"],
+    admin:["visitors","deliveries","verify","invites","queue"]
+  };
+  const hidden=hiddenByRole[currentRole]||[];
+  allTabs.forEach(v=>{
+    const btn=document.querySelector(`[data-view="${v}"]`);
+    if(btn) btn.style.display=hidden.includes(v)?"none":"";
+  });
+  const noteText={
+    watchman:"<b>Security mode</b><br>Gate operations: visitors, deliveries, scanning and quick flat lookup.",
+    resident:"<b>Resident mode</b><br>Look up neighbors to call them, create guest invites and see arrival notifications.",
+    admin:"<b>Admin mode</b><br>Manage residents, review activity and view reports."
+  };
+  const noteEl=document.querySelector(".side-note");
+  if(noteEl) noteEl.innerHTML=noteText[currentRole]||noteText.watchman;
+  // Only Administrator can add new resident records; others get a read-only directory.
+  const addBtn=document.getElementById("addResidentBtn");
+  if(addBtn) addBtn.style.display=(currentRole==="admin")?"":"none";
+  const quickInvite=document.getElementById("quickInviteBtn");
+  if(quickInvite) quickInvite.style.display=(currentRole==="resident")?"":"none";
+  // If the view we were on just got hidden for this role, fall back to the dashboard.
+  const active=document.querySelector(".view.active");
+  if(active && hidden.includes(active.id)) go("dashboard");
+}
+function openAccountMenu(){
+  const a=demoAccounts[currentRole]||demoAccounts.watchman;
+  document.getElementById("accountDetails").innerHTML=`Signed in as <b>${a.name}</b><br>Role: <b>${currentRole}</b><br>Language: <b>${currentLanguage||"English"}</b>`;
+  openModal("accountModal");
+}
+function changeLanguageFromAccount(){
+  closeModal("accountModal"); document.getElementById("languageScreen").classList.add("show");
+}
+function logoutUser(){
+  closeModal("accountModal"); currentRole=""; db.remove("vms_role");
+  document.getElementById("loginScreen").classList.add("show");
+  document.getElementById("languageScreen").classList.remove("show");
+  toast("Logged out");
+}
+function bootAuth(){
+  document.getElementById("loginUser").value="";
+  document.getElementById("loginPass").value="";
+  updateLoginHint();
+  // If already signed in from before (role + language saved), skip straight to the dashboard.
+  if(currentRole && demoAccounts[currentRole]){
+    document.getElementById("languageScreen").classList.remove("show");
+    document.getElementById("loginScreen").classList.remove("show");
+    applyRoleUI(); go("dashboard");
+    return;
+  }
+  // No saved session yet — start the language → login flow.
+  document.getElementById("languageScreen").classList.add("show");
+  document.getElementById("loginScreen").classList.remove("show");
+}
+function save(){db.set("vms_residents",JSON.stringify(residents));db.set("vms_visitors",JSON.stringify(visitors));db.set("vms_deliveries",JSON.stringify(deliveries));db.set("vms_invites",JSON.stringify(invites));db.set("vms_notes",JSON.stringify(notes));db.set("vms_activity",JSON.stringify(activity));db.set("vms_queue",JSON.stringify(queue));updateStats();}
+function now(){return new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});}
+function toast(t){const x=document.getElementById("toast");x.textContent=t;x.classList.add("show");setTimeout(()=>x.classList.remove("show"),2600)}
+function go(view){document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));document.getElementById(view).classList.add("active");document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.view===view));document.getElementById("pageTitle").textContent=document.querySelector(`[data-view="${view}"] span:last-child`)?.textContent||"Dashboard";if(view==="dashboard")renderDashboard();if(view==="residents")renderResidents();if(view==="visitors")renderVisitors();if(view==="deliveries")renderDeliveries();if(view==="invites")renderInvites();if(view==="notifications")renderNotifications();if(view==="activity")renderActivity();if(view==="queue")renderQueue();if(view==="reports")renderReports();}
+document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>go(b.dataset.view));
+function openModal(id){document.getElementById(id).classList.add("show")} function closeModal(id){document.getElementById(id).classList.remove("show")}
+function addActivity(text){activity.unshift({text,time:now()});if(activity.length>30)activity.pop();save();renderActivity();renderDashboard()}
+function addNote(text,targetFlat=""){notes.unshift({text,time:now(),read:false,targetFlat});if(notes.length>30)notes.pop();save()}
+function residentNotificationFor(flat,text){
+  const target=(flat||"").toUpperCase();
+  addNote(text,target);
+  if(currentRole==="resident" && target===DEMO_RESIDENT_FLAT){toast("🔔 New guest arrival notification");}
+}
+function updateStats(){document.getElementById("residentCount").textContent=residents.length;document.getElementById("insideCount").textContent=visitors.filter(v=>v.status==="Inside").length;document.getElementById("deliveryCount").textContent=deliveries.length;document.getElementById("notifCount").textContent=notes.filter(n=>!n.read && (currentRole!=="resident" || !n.targetFlat || n.targetFlat===DEMO_RESIDENT_FLAT)).length}
+function renderDashboard(){updateStats();document.getElementById("todayLabel").textContent=new Date().toLocaleDateString();document.getElementById("recentEvents").innerHTML=activity.slice(0,5).map(e=>`<div class="event"><div>●</div><div><b>${e.text}</b><div class="muted">${e.time}</div></div></div>`).join("")}
+function renderResidents(){let q=(document.getElementById("residentSearch")?.value||"").toLowerCase();let a=residents.filter(r=>Object.values(r).join(" ").toLowerCase().includes(q));document.getElementById("residentTable").innerHTML=a.map(r=>`<tr><td><b>${r.name}</b></td><td>${r.flat}</td><td><span class="badge purple-b">${r.category}</span></td><td>${r.phone}</td><td>${r.id}</td><td><span class="badge green">Active</span></td><td style="display:flex;gap:6px"><a class="btn purple" style="text-decoration:none" href="tel:${r.phone}">📞 Call</a><button class="btn" onclick="showResident('${r.id}')">View</button></td></tr>`).join("")||`<tr><td colspan="7" class="empty">No residents found.</td></tr>`}
+function renderVisitors(){let q=(document.getElementById("visitorSearch")?.value||"").toLowerCase(),f=document.getElementById("visitorFilter")?.value||"";let a=visitors.filter(v=>(Object.values(v).join(" ").toLowerCase().includes(q))&&(!f||v.status===f));document.getElementById("visitorTable").innerHTML=a.map(v=>`<tr><td><b>${v.name}</b></td><td>${v.flat}</td><td>${v.type}</td><td>${v.entry}</td><td>${v.exit}</td><td><span class="badge ${v.status==="Inside"?"green":"blue"}">${v.status}</span></td><td>${v.status==="Inside"?`<button class="btn purple" onclick="exitVisitor(${v.id})">EXIT</button>`:"—"}</td></tr>`).join("")||`<tr><td colspan="7" class="empty">No visitors found.</td></tr>`}
+function renderDeliveries(){document.getElementById("deliveryTable").innerHTML=deliveries.map(v=>`<tr><td><b>${v.name}</b></td><td>${v.company||"—"}</td><td>${v.flat}</td><td>${v.entry}</td><td>${v.exit}</td><td><span class="badge ${v.status==="Inside"?"yellow":"blue"}">${v.status}</span></td><td>${v.status==="Inside"?`<button class="btn purple" onclick="exitDelivery(${v.id})">EXIT</button>`:"—"}</td></tr>`).join("")||`<tr><td colspan="7" class="empty">No deliveries recorded today.</td></tr>`}
+function renderInvites(){document.getElementById("inviteCards").innerHTML=invites.map(i=>`<div class="card"><div class="section-head"><h3>💌 ${i.name}</h3><span class="badge ${i.used?"blue":"green"}">${i.used?"Used":"Active"}</span></div><div class="kpi"><b>Flat:</b> ${i.flat}<br><b>Visit:</b> ${i.date} · ${i.time}<br><b>Token:</b> ${i.token}</div><button class="btn purple" style="margin-top:12px" onclick="showQR('${(i.qrData||i.token).replace(/'/g,"\\'")}','${i.name.replace(/'/g,"\\'")}')">Show QR</button></div>`).join("")||`<div class="card empty" style="grid-column:1/-1">No guest invites yet. Create one for a relative or expected visitor.</div>`}
+function renderNotifications(){const visible=notes.map((n,i)=>({n,i})).filter(x=>currentRole!=="resident" || !x.n.targetFlat || x.n.targetFlat===DEMO_RESIDENT_FLAT);document.getElementById("notificationList").innerHTML=visible.map(x=>`<div class="event"><div>${x.n.read?"✓":"🔔"}</div><div><b>${x.n.text}</b><div class="muted">${x.n.time} · ${x.n.read?"Read":"Unread"}</div></div><button class="btn" style="margin-left:auto" onclick="readNote(${x.i})">Read</button></div>`).join("")||`<div class="empty">No notifications yet.</div>`}
+function renderActivity(){document.getElementById("activityList").innerHTML=activity.map((e,i)=>`<div class="event"><div><b>${i+1}</b></div><div><b>${e.text}</b><div class="muted">${e.time}</div></div></div>`).join("")||`<div class="empty">No operations yet.</div>`}
+function renderQueue(){document.getElementById("queueList").innerHTML=queue.map((q,i)=>`<div class="card" style="margin-bottom:9px;display:flex;justify-content:space-between;align-items:center"><div><b>#${i+1} · ${q.name}</b><div class="muted">${q.type} · ${q.flat} · arrived ${q.time}</div></div><button class="btn purple" onclick="processQueue(${i})">Process</button></div>`).join("")||`<div class="empty">Queue is empty.</div>`}
+function renderReports(){document.getElementById("rptResidents").textContent=residents.length;document.getElementById("rptInside").textContent=visitors.filter(v=>v.status==="Inside").length;document.getElementById("rptDelivery").textContent=deliveries.length}
+function addResident(e){e.preventDefault();let r={id:document.getElementById("resId").value||"RES-"+(100+residents.length+1),name:resName.value,flat:resFlat.value.toUpperCase(),category:resCat.value,phone:resPhone.value};residents.push(r);addActivity(`Resident ${r.name} added to ${r.flat}`);closeModal("residentModal");e.target.reset();toast("Resident saved");renderResidents()}
+function addVisitor(e){e.preventDefault();let v={id:Date.now(),name:visName.value,flat:visFlat.value.toUpperCase(),type:visType.value,entry:now(),exit:"—",status:"Inside"};visitors.unshift(v);addActivity(`${v.name} checked in at ${v.flat}`);residentNotificationFor(v.flat,`Visitor ${v.name} has arrived at ${v.flat}.`);closeModal("visitorModal");e.target.reset();toast("Visitor checked in");go("visitors")}
+function addDelivery(e){e.preventDefault();let d={id:Date.now(),name:delName.value,company:delCompany.value,flat:delFlat.value.toUpperCase(),entry:now(),exit:"—",status:"Inside"};deliveries.unshift(d);addActivity(`Delivery ${d.name} checked in for ${d.flat}`);closeModal("deliveryModal");e.target.reset();toast("Delivery checked in");go("deliveries")}
+function addInvite(e){
+  e.preventDefault();
+  const rawToken="GUEST-"+Math.random().toString(36).slice(2,8).toUpperCase();
+  const i={
+    id:Date.now(),
+    name:invName.value.trim(),
+    flat:invFlat.value.trim().toUpperCase(),
+    date:invDate.value,
+    time:invTime.value,
+    token:rawToken,
+    used:false
+  };
+  // Put the guest details inside the QR so a QR generated on one device
+  // can be verified on another device without relying on localStorage.
+  const payload={
+    v:1,
+    type:"guest",
+    token:rawToken,
+    name:i.name,
+    flat:i.flat,
+    date:i.date,
+    time:i.time
+  };
+  i.qrData="GATEFLOW-GUEST:"+btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  invites.unshift(i);
+  addActivity(`Temporary guest QR created for ${i.name}`);
+  addNote(`Guest QR created for ${i.name} at ${i.flat}.`,i.flat);
+  closeModal("inviteModal");
+  e.target.reset();
+  renderInvites();
+  showQR(i.qrData,i.name);
+  toast("Temporary QR generated");
+}
+function showQR(qrData,name){
+  document.getElementById("qrTitle").textContent="Guest QR · "+name;
+  const box=document.getElementById("generatedQR");
+  box.innerHTML="";
+  if(window.QRCode){
+    new QRCode(box,{
+      text:qrData,
+      width:260,
+      height:260,
+      correctLevel:QRCode.CorrectLevel.H
+    });
+  } else {
+    box.innerHTML=`<span style="word-break:break-all">${qrData}</span>`;
+  }
+  document.getElementById("qrToken").textContent="Guest QR ready for scanning";
+  openModal("qrModal");
+}
+function exitVisitor(id){let v=visitors.find(x=>x.id===id);if(v){v.status="Exited";v.exit=now();addActivity(`${v.name} exited from ${v.flat}`);toast("Visitor exit recorded");renderVisitors();save()}}
+function exitDelivery(id){let v=deliveries.find(x=>x.id===id);if(v){v.status="Exited";v.exit=now();addActivity(`Delivery ${v.name} exited from ${v.flat}`);toast("Delivery exit recorded");renderDeliveries();save()}}
+function showResident(id){let r=residents.find(x=>x.id===id);alert(`Resident\\n\\n${r.name}\\nFlat: ${r.flat}\\nCategory: ${r.category}\\nContact: ${r.phone}\\nResident ID: ${r.id}`)}
+let qrScanner=null;
+let cameraStream=null;
+
+function showCameraError(message){
+  const box=document.getElementById("reader");
+  if(box) box.innerHTML=`<div style="padding:22px;text-align:center">
+    <b>Camera could not start.</b><br>
+    <span style="font-size:12px">${message}</span>
+  </div>`;
+}
+
+async function startQRScanner(){
+  const box=document.getElementById("reader");
+  if(typeof Html5Qrcode === "undefined"){
+    showCameraError("QR scanner library could not be loaded. Use the Phone camera button or Demo QR buttons.");
+    toast("Scanner library unavailable");
+    return;
+  }
+
+  try{
+    stopQRScanner();
+    box.innerHTML="Requesting camera permission…";
+
+    // Ask the browser directly for camera permission first.
+    // This is more reliable on Android Chrome and desktop browsers than
+    // enumerating cameras before permission is granted.
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      throw new Error("Camera API unavailable");
+    }
+
+    cameraStream=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:{ideal:"environment"}},
+      audio:false
+    });
+
+    // The permission has now been granted. Stop the temporary stream;
+    // html5-qrcode will open the actual preview.
+    cameraStream.getTracks().forEach(t=>t.stop());
+    cameraStream=null;
+
+    qrScanner=new Html5Qrcode("reader", {
+      formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE]
+    });
+    await qrScanner.start(
+      {facingMode:"environment"},
+      {fps:10,qrbox:{width:280,height:280},aspectRatio:1.0},
+      text=>handleQRResult(text.trim()),
+      ()=>{}
+    );
+    toast("Camera scanner started");
+  }catch(err){
+    console.error("GateFlow camera error:",err);
+    if(cameraStream){
+      cameraStream.getTracks().forEach(t=>t.stop());
+      cameraStream=null;
+    }
+    const secure = window.isSecureContext;
+    if(!secure){
+      showCameraError("This page is not running in a secure camera context. On a PC use HTTPS or localhost. On a phone, tap “Phone camera” below to scan a QR photo.");
+    }else{
+      showCameraError("Allow camera access in your browser, then try again. You can also use “Phone camera” below.");
+    }
+    toast("Camera permission required");
+  }
+}
+
+function openPhoneCamera(){
+  const input=document.getElementById("qrImageInput");
+  if(input){
+    input.value="";
+    input.click();
+  }
+}
+
+async function scanQRImage(event){
+  const file=event.target.files && event.target.files[0];
+  if(!file) return;
+
+  const result=document.getElementById("verifyResult");
+  const box=document.getElementById("reader");
+
+  try{
+    stopQRScanner();
+    box.innerHTML="Reading QR image…";
+
+    let decoded = null;
+
+    // 1) Use the browser's native QR detector when available.
+    // This can decode the original image directly without depending
+    // on the html5-qrcode scan box.
+    decoded = await decodeWithNativeBarcodeDetector(file);
+
+    // 2) Use jsQR with several image sizes, rotations and crops.
+    if(!decoded && typeof jsQR !== "undefined"){
+      decoded = await decodeImageWithJsQR(file);
+    }
+
+    // 3) Final fallback: html5-qrcode's image decoder.
+    if(!decoded && typeof Html5Qrcode !== "undefined"){
+      const imageScanner=new Html5Qrcode("reader", {
+        formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE]
+      });
+      try{
+        decoded=await imageScanner.scanFile(file,false);
+      }catch(innerErr){
+        console.warn("html5-qrcode image fallback:",innerErr);
+      }
+      await imageScanner.clear().catch(()=>{});
+    }
+
+    if(decoded){
+      decoded=String(decoded).trim();
+      box.innerHTML=`<div class="notice success"><b>✓ QR detected</b><br>Code: ${decoded}</div>`;
+      handleQRResult(decoded);
+      return;
+    }
+
+    throw new Error("No QR code detected");
+  }catch(err){
+    console.error("QR image scan error:",err);
+    result.innerHTML=`<div class="notice warning"><b>No QR code found.</b><br>
+      The image opened correctly, but the QR decoder could not read it.
+      Try selecting the original QR screenshot/photo rather than a cropped or compressed copy.
+    </div>`;
+    box.innerHTML="Camera preview will appear here";
+    toast("No QR code found");
+  }
+}
+
+async function decodeWithNativeBarcodeDetector(file){
+  try{
+    if(!("BarcodeDetector" in window)) return null;
+
+    let formats=["qr_code"];
+    if(typeof BarcodeDetector.getSupportedFormats==="function"){
+      const supported=await BarcodeDetector.getSupportedFormats();
+      if(!supported.includes("qr_code")) return null;
+      formats=["qr_code"];
+    }
+
+    const detector=new BarcodeDetector({formats});
+    const bitmap=await createImageBitmap(file);
+    const codes=await detector.detect(bitmap);
+    bitmap.close();
+
+    if(codes && codes.length && codes[0].rawValue){
+      return codes[0].rawValue;
+    }
+  }catch(e){
+    console.warn("Native BarcodeDetector unavailable/failed:",e);
+  }
+  return null;
+}
+
+/* Strong image decoder:
+   - corrects phone-image orientation by trying 0/90/180/270
+   - resizes the image for QR detection
+   - scans the whole image
+   - scans several central crops
+   - tries both normal and inverted QR patterns */
+function decodeImageWithJsQR(file){
+  return new Promise((resolve,reject)=>{
+    if(typeof jsQR==="undefined"){
+      resolve(null);
+      return;
+    }
+
+    const url=URL.createObjectURL(file);
+    const img=new Image();
+
+    img.onload=async ()=>{
+      try{
+        const originalW=img.naturalWidth || img.width;
+        const originalH=img.naturalHeight || img.height;
+
+        // Keep enough resolution for the QR while avoiding huge canvases.
+        const maxSide=2400;
+        const scale=Math.min(1,maxSide/Math.max(originalW,originalH));
+        const w=Math.max(1,Math.round(originalW*scale));
+        const h=Math.max(1,Math.round(originalH*scale));
+
+        const attempts=[];
+
+        // Whole image at several scales.
+        for(const factor of [1,1.5,2]){
+          attempts.push({x:0,y:0,cw:w,ch:h,scale:factor});
+        }
+
+        // The QR in screen photos is commonly near the centre.
+        for(const fraction of [0.95,0.85,0.75,0.65]){
+          const cw=Math.round(w*fraction);
+          const ch=Math.round(h*fraction);
+          attempts.push({
+            x:Math.round((w-cw)/2),
+            y:Math.round((h-ch)/2),
+            cw,ch,scale:1.5
+          });
+        }
+
+        const angles=[0,90,180,270];
+
+        for(const angle of angles){
+          for(const a of attempts){
+            const sourceCanvas=document.createElement("canvas");
+            sourceCanvas.width=w;
+            sourceCanvas.height=h;
+            const sctx=sourceCanvas.getContext("2d",{willReadFrequently:true});
+
+            sctx.save();
+            sctx.translate(w/2,h/2);
+            sctx.rotate(angle*Math.PI/180);
+            sctx.drawImage(img,-w/2,-h/2,w,h);
+            sctx.restore();
+
+            const cropW=Math.max(1,Math.round(a.cw*a.scale));
+            const cropH=Math.max(1,Math.round(a.ch*a.scale));
+            const canvas=document.createElement("canvas");
+            canvas.width=cropW;
+            canvas.height=cropH;
+            const ctx=canvas.getContext("2d",{willReadFrequently:true});
+
+            ctx.imageSmoothingEnabled=false;
+            ctx.drawImage(
+              sourceCanvas,
+              a.x,a.y,a.cw,a.ch,
+              0,0,cropW,cropH
+            );
+
+            const data=ctx.getImageData(0,0,cropW,cropH);
+            const code=jsQR(
+              data.data,data.width,data.height,
+              {inversionAttempts:"attemptBoth"}
+            );
+
+            if(code && code.data){
+              URL.revokeObjectURL(url);
+              resolve(code.data);
+              return;
+            }
+          }
+        }
+
+        URL.revokeObjectURL(url);
+        resolve(null);
+      }catch(e){
+        URL.revokeObjectURL(url);
+        reject(e);
+      }
+    };
+
+    img.onerror=()=>{
+      URL.revokeObjectURL(url);
+      reject(new Error("Unable to load image"));
+    };
+
+    img.src=url;
+  });
+}
+
+function stopQRScanner(){
+  if(cameraStream){
+    cameraStream.getTracks().forEach(t=>t.stop());
+    cameraStream=null;
+  }
+  if(qrScanner){
+    const scanner=qrScanner;
+    qrScanner=null;
+    scanner.stop().catch(()=>{}).finally(()=>scanner.clear().catch(()=>{}));
+  }
+  const box=document.getElementById("reader");
+  if(box) box.innerHTML="Camera preview will appear here";
+}
+
+function handleQRResult(text){
+  stopQRScanner();
+  text=String(text||"").trim();
+
+  // Demo QR fallback:
+  // This token is used by the GateFlow demo QR image. On a phone,
+  // local browser storage can be different from the laptop that generated
+  // the QR, so the token may not exist in the local invites array.
+  if(text === "GUEST-SQLRD0"){
+    document.getElementById("verifyResult").innerHTML=`<div class="notice success"><b>✓ Guest Verified</b><br>Name: Amit Sharma<br>Flat: B-401<br>🔔 Resident notified.<br><span class="muted">Demo guest QR accepted.</span><br><button class="btn purple" style="margin-top:8px" onclick="toast('Guest checked in')">Check In Guest</button></div>`;
+    addActivity("Demo guest QR GUEST-SQLRD0 verified");
+    return;
+  }
+
+  // Decode a self-contained guest QR first. This is the important
+  // cross-device verification path.
+  let qrGuest=null;
+  try{
+    if(text.startsWith("GATEFLOW-GUEST:")){
+      const encoded=text.slice("GATEFLOW-GUEST:".length);
+      qrGuest=JSON.parse(decodeURIComponent(escape(atob(encoded))));
+    }
+  }catch(e){
+    console.warn("Guest QR payload parse failed",e);
+  }
+
+  // Cross-device guest QR: guest details are embedded in the QR payload.
+  if(text.startsWith("GATEFLOW-GUEST:")){
+    try{
+      const guest=JSON.parse(atob(text.slice("GATEFLOW-GUEST:".length)));
+      if(guest && guest.name && guest.flat){
+        document.getElementById("verifyResult").innerHTML=`<div class="notice success"><b>✓ Guest Verified</b><br>${guest.name}<br>Flat: ${guest.flat}<br>🔔 Resident notified.</div>`;
+        addActivity(`Temporary guest QR scanned for ${guest.name}`);
+        residentNotificationFor(guest.flat,`Guest ${guest.name} has arrived at ${guest.flat}. Resident notified.`);
+        return;
+      }
+    }catch(e){}
+  }
+
+  const resident=residents.find(r=>String(r.id).trim()===text);
+  const invite=invites.find(i=>String(i.token).trim()===text);
+
+  if(resident){
+    document.getElementById("verifyResult").innerHTML=`<div class="notice success"><b>✓ Resident Verified</b><br>${resident.name}<br>Flat: ${resident.flat}<br>Category: ${resident.category}<br>Resident ID: ${resident.id}<br><button class="btn purple" style="margin-top:8px" onclick="toast('Entry recorded')">Record Entry</button></div>`;
+    addActivity(`Resident ${resident.name} verified by live QR`);
+  }else if(qrGuest && qrGuest.type==="guest" && qrGuest.name && qrGuest.flat){
+    // The QR contains its own guest identity, so it works on another device.
+    if(invite) invite.used=true;
+    residentNotificationFor(qrGuest.flat,`Guest ${qrGuest.name} has arrived at ${qrGuest.flat}. Resident notified.`);
+    document.getElementById("verifyResult").innerHTML=`<div class="notice success"><b>✓ Guest Verified</b><br>${qrGuest.name}<br>Flat: ${qrGuest.flat}<br>🔔 Resident notified.<br><span class="muted">Guest QR verified successfully.</span></div>`;
+    addActivity(`Guest QR verified for ${qrGuest.name}`);
+    save();
+  }else if(invite){
+    // Backward compatibility for older locally-created guest QRs.
+    invite.used=true;
+    residentNotificationFor(invite.flat,`Guest ${invite.name} has arrived at ${invite.flat}. Resident notified.`);
+    document.getElementById("verifyResult").innerHTML=`<div class="notice success"><b>✓ Guest Verified</b><br>${invite.name}<br>Flat: ${invite.flat}<br>🔔 Resident notified.</div>`;
+    addActivity(`Temporary guest QR scanned for ${invite.name}`);
+    save();
+  }else{
+    document.getElementById("verifyResult").innerHTML=`<div class="notice warning"><b>Invalid QR</b><br>This QR is not a valid GateFlow guest/resident QR.<br>Please generate a new Guest QR from GateFlow.</div>`;
+    addActivity("Invalid QR attempted");
+  }
+}
+function simulateScan(type){let result=document.getElementById("verifyResult");if(type==="resident"){result.innerHTML=`<div class="notice success"><b>✓ Resident Verified</b><br>Name: Aarav Sharma<br>Flat: B-401<br>Category: Minor<br>Permanent Resident ID found.<br><button class="btn purple" style="margin-top:8px" onclick="toast('Entry recorded')">Record Entry</button></div>`;addActivity("Resident Aarav Sharma verified by QR")}
+else if(type==="child"){result.innerHTML=`<div class="notice success"><b>✓ Child Identified</b><br>Physical ID verified.<br>No smartphone required.<br><button class="btn purple" style="margin-top:8px" onclick="toast('Child entry recorded')">Record Entry</button></div>`;addActivity("Child physical ID verified")}
+else {result.innerHTML=`<div class="notice success"><b>✓ Guest Verified</b><br>Name: Amit Sharma<br>Flat: B-401<br>🔔 Resident notified.<br><button class="btn purple" style="margin-top:8px" onclick="toast('Guest checked in')">Check In Guest</button></div>`;addActivity("Temporary guest QR verified");residentNotificationFor("B-401","Guest Amit Sharma has arrived at B-401. Resident notified.")}
+renderActivity();renderDashboard()}
+function manualVerify(){let flat=prompt("Enter flat number (example: B-401)");if(!flat)return;let a=residents.filter(r=>r.flat.toUpperCase()===flat.toUpperCase());if(!a.length){toast("Flat not found");return}let contact=a[0];document.getElementById("verifyResult").innerHTML=`<div class="notice"><b>Flat: ${flat.toUpperCase()}</b><br>Residents: ${a.map(x=>x.name+" ("+x.category+")").join(", ")}<br>Authorized Contact: ${contact.name}<br><button class="btn pink" style="margin-top:8px" onclick="toast('Calling '+ '${contact.name}')">📞 CALL RESIDENT</button></div>`;addActivity(`Manual flat verification for ${flat.toUpperCase()}`)}
+function markAllRead(){notes.forEach(n=>n.read=true);save();renderNotifications();toast("All notifications marked read")}
+function readNote(i){notes[i].read=true;save();renderNotifications()}
+function showNotifications(){go("notifications")}
+function undoLast(){if(activity.length){let x=activity.shift();save();renderActivity();renderDashboard();toast("Latest operation removed from activity stack")}}
+function addQueueDemo(){let n="Visitor "+(queue.length+1);queue.push({name:n,flat:"B-"+(400+queue.length+1),type:"Waiting",time:now()});save();renderQueue();toast("Visitor added to queue")}
+function processQueue(i){let q=queue.splice(i,1)[0];addActivity(`${q.name} processed from queue`);save();renderQueue();toast("Queue visitor processed")}
+function toggleLanguage(){document.getElementById("languageScreen").classList.add("show")}
+function setInfoMode(detailed){document.getElementById("appinfo").classList.toggle("detailed",detailed);document.getElementById("infoSimpleBtn").classList.toggle("active",!detailed);document.getElementById("infoDetailBtn").classList.toggle("active",detailed)}
+function exportData(){let data={residents,visitors,deliveries,invites,notifications:notes,activity,queue};let blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});let a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="visitor-management-data.json";a.click();URL.revokeObjectURL(a.href);toast("Data exported")}
+renderDashboard();renderResidents();renderVisitors();renderDeliveries();renderInvites();renderNotifications();renderActivity();renderQueue();renderReports();save();
+bootAuth();
+</script>
+</body>
+</html>
